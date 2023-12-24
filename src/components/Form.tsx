@@ -25,7 +25,7 @@ function Form({ categories }: { categories: [] | undefined }) {
   const [allProperties, setAllProperties] = useState([]);
   const [properties, setProperties] = useState({});
 
-  const subCategoryFunc = (category: number | string): object | undefined =>
+  const subCategoryFunc = (category: number | string) =>
     allCategories?.find((cat) => cat.id === +category);
 
   useEffect(() => {
