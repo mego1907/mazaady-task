@@ -34,7 +34,7 @@ function Form({ categories }: { categories: [] | undefined }) {
 
   useEffect(() => {
     const getData = async () => {
-      if(subCategory) {
+      if (subCategory) {
         const data = await getProcessType(subCategory);
         setAllProperties(data);
       }
@@ -59,19 +59,34 @@ function Form({ categories }: { categories: [] | undefined }) {
     setCustomData(data);
   };
 
-  const tableHeaders = customData[0] && Object.keys(customData[0]);
+  const tableHeaders = () => {
+    let highestLength = 0;
+    let highestItem = 0;
+    for (let i = 0; i < customData.length; i++) {
+      let objLength = Object.keys(customData[i]).length;
+      if (objLength > highestLength) {
+        highestLength = objLength;
+        highestItem = i;
+      }
+    }
+
+    return customData[highestItem] ? customData[highestItem] : {};
+  };
 
   const tableRows = customData?.map((item, index) => {
     return (
       <tr key={index}>
-        {tableHeaders?.map((header, index) => (
-          <td className="text-center border border-slate-700 p-2" key={index}>
-            {item[header]}
-          </td>
-        ))}
+        {tableHeaders &&
+          Object.keys(tableHeaders())?.map((header, index) => (
+            <td className="text-center border border-slate-700 p-2" key={index}>
+              {item[header]}
+            </td>
+          ))}
       </tr>
     );
   });
+
+  // get all headers in the table
 
   return (
     <div className="bg-white p-6 rounded-21px">
@@ -127,14 +142,15 @@ function Form({ categories }: { categories: [] | undefined }) {
       <table className="border-collapse border border-slate-500 w-full mt-5">
         <thead>
           <tr>
-            {tableHeaders?.map((header, i) => (
-              <th
-                key={i}
-                className="text-center border border-slate-700 bg-gray-200 p-1"
-              >
-                {header}
-              </th>
-            ))}
+            {tableHeaders &&
+              Object.keys(tableHeaders())?.map((header, i) => (
+                <th
+                  key={i}
+                  className="text-center border border-slate-700 bg-gray-200 p-1"
+                >
+                  {header}
+                </th>
+              ))}
           </tr>
         </thead>
         <tbody>{tableRows}</tbody>
