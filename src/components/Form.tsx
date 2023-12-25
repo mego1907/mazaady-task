@@ -11,7 +11,11 @@ import { instance } from "@/network/axiosConfig";
 async function getProcessType(id: any) {
   const res = await instance.get(`properties?cat=${id}`);
 
-  return res.data.data;
+  if (res.data.data) {
+    return res.data.data;
+  }
+
+  return [];
 }
 
 function Form({ categories }: { categories: [] | undefined }) {
@@ -30,8 +34,10 @@ function Form({ categories }: { categories: [] | undefined }) {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await getProcessType(13);
-      setAllProperties(data);
+      if(subCategory) {
+        const data = await getProcessType(subCategory);
+        setAllProperties(data);
+      }
     };
 
     getData();
