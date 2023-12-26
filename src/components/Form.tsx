@@ -4,89 +4,98 @@ import {
   CustomButton,
   CustomInput,
   CustomSelectbox,
+  CustomTable,
   CustomTitle,
 } from "./custom";
 import { instance } from "@/network/axiosConfig";
-
-async function getProcessType(id: any) {
-  const res = await instance.get(`properties?cat=${id}`);
-
-  if (res.data.data) {
-    return res.data.data;
-  }
-
-  return [];
-}
+import CategoriesAndSubCategories from "./CategoriesAndSubCategories";
 
 function Form({ categories }: { categories: [] | undefined }) {
   const [mainCategory, setMainCategory] = useState("");
   const [subCategory, setSubCategory] = useState(undefined);
+  const [nextProperty, setNextProperty] = useState(0);
 
   const [allCategories, setAllCategories] = useState(
     categories?.map(({ name, id, children }) => ({ name, id, children }))
   );
 
   const [allProperties, setAllProperties] = useState([]);
-  const [properties, setProperties] = useState({});
-
-  const subCategoryFunc = (category: number | string) =>
-    allCategories?.find((cat) => cat.id === +category);
-
-  useEffect(() => {
-    const getData = async () => {
-      if (subCategory) {
-        const data = await getProcessType(subCategory);
-        setAllProperties(data);
-      }
-    };
-
-    getData();
-  }, [subCategory]);
-
+  // const [properties, setProperties] = useState({});
   const [customData, setCustomData] = useState([]);
+
+  const [allShownProperties, setAllShownProperties] = useState([]);
+
+  // =========================================
+  async function getProcessType(id: any) {
+    try {
+      const res = await instance.get(`properties?cat=${id}`);
+
+      setAllProperties(res.data.data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
 
   // =>> Handle Submit
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    const item = { ...properties, mainCategory, subCategory };
+    let item = {};
+    let data = [];
 
-    let data: { mainCategory: string; subCategory: undefined }[] = [
-      ...customData,
-      item,
-    ];
+    Array(nextProperty + 3)
+      .fill(0)
+      .map((_, index) => {
+        if (e.target[index].value.split("-")[1]) {
+          item = {
+            ...item,
+            [e.target[index].id]: e.target[index].value.split("-")[1],
+          };
+        } else {
+          item = { ...item, [e.target[index].id]: e.target[index].value };
+        }
+      });
+
+    data = [...customData, item];
+
+    // const item = { ...properties, mainCategory, subCategory };
+
+    // let data: { mainCategory: string; subCategory: undefined }[] = [
+    //   ...customData,
+    //   item,
+    // ];
+    // console.log("data :", data);
 
     setCustomData(data);
   };
 
-  const tableHeaders = () => {
-    let highestLength = 0;
-    let highestItem = 0;
-    for (let i = 0; i < customData.length; i++) {
-      let objLength = Object.keys(customData[i]).length;
-      if (objLength > highestLength) {
-        highestLength = objLength;
-        highestItem = i;
-      }
+  // console.log("customData :", customData);
+
+  useEffect(() => {
+    if (allProperties[nextProperty]) {
+      setAllShownProperties([
+        ...allShownProperties,
+        allProperties[nextProperty],
+      ]);
     }
+  }, [nextProperty, allProperties, subCategory]);
 
-    return customData[highestItem] ? customData[highestItem] : {};
-  };
+  // => Handle Change
+  // const handleChange = (e, prop, index) => {
+  //   if (e.target.value.split("-")[1]) {
+  //     setProperties({
+  //       ...properties,
+  //       [prop.name]: e.target.value.split("-")[1],
+  //     });
+  //   } else {
+  //     setProperties({
+  //       ...properties,
+  //       [prop.name]: e.target.value,
+  //     });
+  //   }
+  // };
 
-  const tableRows = customData?.map((item, index) => {
-    return (
-      <tr key={index}>
-        {tableHeaders &&
-          Object.keys(tableHeaders())?.map((header, index) => (
-            <td className="text-center border border-slate-700 p-2" key={index}>
-              {item[header]}
-            </td>
-          ))}
-      </tr>
-    );
-  });
-
-  // get all headers in the table
+  // console.log("nextProperty :", nextProperty);
 
   return (
     <div className="bg-white p-6 rounded-21px">
@@ -98,21 +107,20 @@ function Form({ categories }: { categories: [] | undefined }) {
           Form
         </CustomTitle>
 
-        <CustomSelectbox
-          options={allCategories}
-          label="Main Category"
-          defaultValue="Nader"
-          onChange={(e: any) => setMainCategory(e.target.value.split("-")[0])}
+        <CategoriesAndSubCategories
+          allMainCategories={allCategories}
+          mainCategory={mainCategory}
+          setMainCategory={setMainCategory}
+          setSubCategory={setSubCategory}
+          setAllShownProperties={setAllShownProperties}
+          // setProperties={setProperties}
+          getProcessType={getProcessType}
+          setNextProperty={setNextProperty}
+          setAllProperties={setAllProperties}
         />
 
-        <CustomSelectbox
-          options={subCategoryFunc(mainCategory)?.children}
-          label="Sub Category"
-          onChange={(e: any) => setSubCategory(e.target.value.split("-")[0])}
-        />
-
-        {allProperties.map((prop, index) => {
-          if (prop.options.length > 0) {
+        {allShownProperties.map((prop, index) => {
+          if (prop) {
             return (
               <CustomSelectbox
                 key={index}
@@ -121,14 +129,10 @@ function Form({ categories }: { categories: [] | undefined }) {
                   { name: "Other", value: "other", id: "other" },
                 ]}
                 label={prop?.name}
-                onChange={(e) =>
-                  setProperties({
-                    ...properties,
-                    [prop.name]: e.target.value.split("-")[1]
-                      ? e.target.value.split("-")[1]
-                      : e.target.value,
-                  })
-                }
+                // onChange={(e) => handleChange(e, prop, index)}
+                isLastSelect={allShownProperties.length === index + 1}
+                setNextProperty={setNextProperty}
+                nextProperty={nextProperty}
               />
             );
           }
@@ -139,22 +143,7 @@ function Form({ categories }: { categories: [] | undefined }) {
         </CustomButton>
       </form>
 
-      <table className="border-collapse border border-slate-500 w-full mt-5">
-        <thead>
-          <tr>
-            {tableHeaders &&
-              Object.keys(tableHeaders())?.map((header, i) => (
-                <th
-                  key={i}
-                  className="text-center border border-slate-700 bg-gray-200 p-1"
-                >
-                  {header}
-                </th>
-              ))}
-          </tr>
-        </thead>
-        <tbody>{tableRows}</tbody>
-      </table>
+      <CustomTable customData={customData} />
     </div>
   );
 }
