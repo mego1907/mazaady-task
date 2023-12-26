@@ -118,19 +118,20 @@ function CustomSelectbox({
               }}
             >
               <option value={undefined}> ---- </option>
-              {newSelectData?.options?.map(
-                (opt: { name: string; id: number; child: boolean }) => {
-                  return (
-                    <option
-                      key={opt?.id}
-                      value={`${opt?.id}-${opt?.name}`}
-                      id={opt?.name}
-                    >
-                      {opt?.name}
-                    </option>
-                  );
-                }
-              )}
+              {[
+                ...newSelectData?.options,
+                { name: "Other", value: "other", id: "other" },
+              ]?.map((opt: { name: string; id: number; child: boolean }) => {
+                return (
+                  <option
+                    key={opt?.id}
+                    value={`${opt?.id}-${opt?.name}`}
+                    id={opt?.name}
+                  >
+                    {opt?.name}
+                  </option>
+                );
+              })}
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
               <svg
@@ -149,7 +150,7 @@ function CustomSelectbox({
 
       {showInput && (
         <div className="mt-3">
-          <CustomInput onChange={onChange} />
+          <CustomInput onChange={onChange} name={label} />
         </div>
       )}
     </div>

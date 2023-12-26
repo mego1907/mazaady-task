@@ -40,10 +40,12 @@ function Form({ categories }: { categories: [] | undefined }) {
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
+    console.log(e.target);
+
     let item = {};
     let data = [];
 
-    Array(nextProperty + 3)
+    Array(nextProperty + 5)
       .fill(0)
       .map((_, index) => {
         if (e.target[index].value.split("-")[1]) {
@@ -69,7 +71,7 @@ function Form({ categories }: { categories: [] | undefined }) {
     setCustomData(data);
   };
 
-  // console.log("customData :", customData);
+  console.log("customData :", customData);
 
   useEffect(() => {
     if (allProperties[nextProperty]) {

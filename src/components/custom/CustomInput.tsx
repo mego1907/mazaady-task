@@ -5,6 +5,7 @@ type CustomInputProps = {
   type?: string;
   placeholder?: string;
   onChange?: any;
+  name?: string;
 };
 
 const CustomInput = ({
@@ -12,6 +13,7 @@ const CustomInput = ({
   type = "text",
   placeholder,
   onChange,
+  name,
 }: CustomInputProps) => {
   return (
     <div className="w-full mb-6 md:mb-0">
@@ -25,7 +27,7 @@ const CustomInput = ({
       )}
       <input
         className="appearance-none block w-full bg-white text-gray-700 border border-gray-400 rounded py-2 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-        id={label}
+        id={name}
         type={type}
         placeholder={placeholder}
         onChange={onChange}
