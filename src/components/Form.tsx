@@ -25,6 +25,8 @@ function Form({ categories }: { categories: [] | undefined }) {
 
   const [allShownProperties, setAllShownProperties] = useState([]);
 
+  const formRef = useRef(null);
+
   // =========================================
   async function getProcessType(id: any) {
     try {
@@ -40,13 +42,19 @@ function Form({ categories }: { categories: [] | undefined }) {
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    console.log(e.target);
+    const allSelectboxs = formRef.current.querySelectorAll("select");
+    const allInputs = formRef.current.querySelectorAll("input");
+
+    const allFields = [...allSelectboxs, ...allInputs];
+    const allFieldsIds = [];
+    allFields.forEach((select) => {
+      allFieldsIds.push(select.id)
+    });
 
     let item = {};
     let data = [];
 
-    Array(nextProperty + 5)
-      .fill(0)
+    allFieldsIds
       .map((_, index) => {
         if (e.target[index].value.split("-")[1]) {
           item = {
@@ -59,19 +67,10 @@ function Form({ categories }: { categories: [] | undefined }) {
       });
 
     data = [...customData, item];
-
-    // const item = { ...properties, mainCategory, subCategory };
-
-    // let data: { mainCategory: string; subCategory: undefined }[] = [
-    //   ...customData,
-    //   item,
-    // ];
-    // console.log("data :", data);
-
     setCustomData(data);
+    
   };
 
-  console.log("customData :", customData);
 
   useEffect(() => {
     if (allProperties[nextProperty]) {
@@ -104,6 +103,7 @@ function Form({ categories }: { categories: [] | undefined }) {
       <form
         className="flex flex-col gap-5 md:w-1/2 w-full"
         onSubmit={handleSubmit}
+        ref={formRef}
       >
         <CustomTitle desc="This is the only page is not responsive">
           Form
